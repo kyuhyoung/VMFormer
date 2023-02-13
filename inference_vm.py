@@ -163,7 +163,7 @@ def main(args):
         for clip in sorted(os.listdir(root_folder)):
             clip_path = os.path.join(root_folder, clip)
             clip_paths.append(clip_path)
-
+        #print(f'clip_paths : {clip_paths}');    exit(0)
         for single_clip_path in clip_paths:
             pha_mad = []
             pha_mse = []
@@ -176,6 +176,7 @@ def main(args):
                 files.append(os.path.join(single_clip_path_com, single))
             img_set = []
             img_index_set = []
+            print(f'files : {files}');    exit(0)
 
             for k in range(len(files)):
                 im = Image.open(files[k])
