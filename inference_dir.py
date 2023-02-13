@@ -38,8 +38,18 @@ import sys
 import cv2
 from natsort import natsorted
 
+def mkdir_ifnotexists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+
 def is_this_empty_string(strin):
     return (strin in (None, '')) or (not strin.strip())
+
+def get_exact_file_name_from_path(str_path):
+    return os.path.splitext(os.path.basename(str_path))[0]
+
 
 
 def get_args_parser():
@@ -110,6 +120,7 @@ def get_args_parser():
 
     # dataset parameters
     parser.add_argument('--img_path', default='../data/Matting/videomatte_512x288/')
+    parser.add_argument('--dir_out', default='output/')
     parser.add_argument('--ext', default='png')
     parser.add_argument('--dataset_file', default='vm')
     parser.add_argument('--model', default='vm')
@@ -212,11 +223,14 @@ def main(args):
         img_set = []
         img_index_set = []
         li_im = []
+        li_fn_im = []
         #    print(f'files : {files}');    exit(0)
         im_bg_bgr = None
+        mkdir_ifnotexists(args.dir_out)
         for kk in range(len(files)):
             print(f'kk : {kk} / {len(files)}')
             im = Image.open(files[kk])
+            li_fn_im.append(get_exact_file_name_from_path(files[kk]))
             w, h = im.size
             if im_bg_bgr is None:
                 im_bg_bgr = np.zeros((h, w, 3), np.uint8)
@@ -245,9 +259,13 @@ def main(args):
                     im_com_bgr = (1.0 - pred_pha) * im_bg_bgr + pred_pha * im_ori_bgr
                     print(f'type(im) : {type(im)}, type(pred_pha) : {type(pred_pha)}')
                     print(f'pred_pha.shape : {pred_pha.shape}');    
-                    cv2.imwrite('com.png', im_com_bgr);        
+                    path_com = os.path.join(args.dir_out, f'{li_fn_im[jj]}.png') 
+                    #print(f'path_com : {path_com}');    exit(0)
+                    cv2.imwrite(path_com, im_com_bgr);        
+                    '''
                     if kk > 5:
                         exit(0)
+                    '''
                     #pha_gt_file = files[img_index_set[j]].replace('com','pha')
                     #true_pha = cv2.imread(pha_gt_file, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255
                     #pha_mad.append(mad(pred_pha, true_pha))
@@ -257,6 +275,7 @@ def main(args):
                 img_set = []
                 img_index_set = []
                 li_im = []
+                li_fn_im = []
             #print('pha_mad:%.2f\n'%(np.mean(pha_mad)))
             #print('pha_mse:%.2f\n'%(np.mean(pha_mse)))
             #print('pha_grad:%.2f\n'%(np.mean(pha_grad)))
